@@ -1,0 +1,27 @@
+name: ✨ Feature request
+description: A new check, a smarter repair, or a better surface
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What failure or friction does this address?
+      description: Feature requests should trace back to a real-world dsh failure you hit or witnessed.
+      placeholder: |
+        After an interrupted `dsh plugin add`, the profile has a half-written
+        pnpm lockfile and every boot warns...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What should it do?
+      description: If it is a new check: what would `detect` read, what would `fix` write, and can it be undone?
+  - type: checkbox
+    id: constraints
+    attributes:
+      label: Constraints you can accept
+      options:
+        - Report-only is fine (no auto-fix)
+        - Auto-fix is needed
+        - Needs AI analysis, not just rules

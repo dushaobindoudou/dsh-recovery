@@ -18,4 +18,5 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm install --no-fund --no-audit
+      - run: npm run typecheck
       - run: npm test

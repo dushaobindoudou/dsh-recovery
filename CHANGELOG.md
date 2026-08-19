@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-08-19
+
+### Added
+
+- One-command install as a dsh plugin bundle: `dsh plugin --profile <name> add dsh-selfrepair`
+  composes the shipped `cordis.patch.yml` through the new `dsh.bundle.patch`
+  manifest field - no manual profile YAML editing.
+- TypeScript declarations for the whole public API (`types` entry,
+  `exports.*.types` conditions, contract in `lib/types.d.ts`), checked in CI
+  with `tsc --strict`.
+- Bilingual docs: README.zh.md mirroring README.md, plus CONTRIBUTING.md,
+  SECURITY.md, issue templates, PR template, and `examples/healthcheck.sh`
+  (exit-code contract for cron/launchd).
+
 ## [0.1.0] - 2026-08-19
 
 ### Added
@@ -25,4 +39,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `dsh-selfrepair restore` (`--only <check-id>` scopes both fix and restore).
 - Exit code 1 when unhealthy, `--json` for machine-readable output.
 
+[0.2.0]: https://github.com/dushaobindoudou/dsh-selfrepair/releases/tag/v0.2.0
 [0.1.0]: https://github.com/dushaobindoudou/dsh-selfrepair/releases/tag/v0.1.0

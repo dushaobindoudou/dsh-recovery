@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question / usage help
+    url: https://github.com/dushaobindoudou/dsh-selfrepair/discussions
+    about: Ask here before opening an issue

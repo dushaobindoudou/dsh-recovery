@@ -1,0 +1,42 @@
+name: 🐛 Bug report
+description: Something diagnosed wrongly, crashed, or repaired badly
+labels: [bug]
+body:
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Which surface?
+      options:
+        - CLI (`dsh-selfrepair`)
+        - Slash command (`/doctor`)
+        - Settings page (诊断)
+        - Other / not sure
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you ran, what you expected, what you got.
+      placeholder: |
+        dsh-selfrepair status --profile web
+        expected: reports the duplicated @deepseek-ai/cordis copy
+        got: "No problems found."
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output of `dsh-selfrepair status --json`
+      description: Paths are fine to include; redact anything sensitive.
+      render: shell
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      placeholder: "dsh-selfrepair 0.2.0, dsh 10.x, node 22"
+  - type: textarea
+    id: fix-attempt
+    attributes:
+      label: If a fix went wrong
+      description: Was a backup left behind? Did `restore` recover it? Say what you did.
