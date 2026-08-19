@@ -1,0 +1,16 @@
+# dependencies
+node_modules/
+
+# npm
+*.log
+.npm/
+
+# runtime artifacts produced while testing fixes locally
+.dsh-doctor-backup/
+*.doctor-backup
+
+# os / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/

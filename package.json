@@ -1,0 +1,71 @@
+{
+  "name": "dsh-selfrepair",
+  "version": "0.1.0",
+  "description": "Diagnose and repair a dsh installation: duplicated profile modules, unusable model configuration, and broken settings - from the settings page, a slash command, or a standalone CLI that works even when dsh cannot start.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./doctor": "./lib/doctor.js",
+    "./checks": "./lib/checks/index.js",
+    "./paths": "./lib/paths.js",
+    "./remote": "./lib/remote.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/**/*.js",
+    "bin/*.js",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "bin": {
+    "dsh-selfrepair": "bin/selfrepair.js"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "diagnostics",
+    "doctor",
+    "self-repair",
+    "cordis-plugin"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "author": "dushaobindoudou",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dushaobindoudou/dsh-selfrepair.git"
+  },
+  "bugs": "https://github.com/dushaobindoudou/dsh-selfrepair/issues",
+  "homepage": "https://github.com/dushaobindoudou/dsh-selfrepair#readme",
+  "dependencies": {
+    "yaml": "^2.9.0"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-typert-protocol": "0.1.0-rc.6"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-typert-protocol": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@deepseek-ai/dsh-typert-protocol": "0.1.0-rc.6"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web"
+    }
+  }
+}
