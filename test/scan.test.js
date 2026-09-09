@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, symlinkSync, rmSync, realpathSyn
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { scanProfile } from '../lib/scan.js';
+import { scanProfile, sameReleaseLine } from '../lib/scan.js';
 import { linkDuplicates, restore } from '../lib/repair.js';
 
 /** Build a package dir with a manifest. */
@@ -45,10 +45,57 @@ describe('scanProfile', () => {
     pkg(localNM, 'left-pad', '1.0.0');
     const r = scanProfile({ profileRoot, globalRoot });
     assert.equal(r.duplicates.length, 0);
+    assert.equal(r.diverged.length, 0);
     assert.equal(r.skipped.length, 1);
     assert.equal(r.skipped[0].reason, 'version mismatch');
     assert.equal(r.skipped[0].localVersion, '1.0.0');
     assert.equal(r.skipped[0].globalVersion, '2.0.0');
+  });
+
+  test('a stale harness copy after a dsh upgrade is diverged, not by-design', () => {
+    // The exact post-upgrade state: the global tree moved on, the profile kept
+    // the copy its lockfile pins. Two cordis instances is the failure this tool
+    // exists for, whatever the version numbers say.
+    pkg(globalNM, '@deepseek-ai/cordis', '4.0.2');
+    pkg(localNM, '@deepseek-ai/cordis', '4.0.1');
+    const r = scanProfile({ profileRoot, globalRoot });
+    assert.equal(r.duplicates.length, 0);
+    assert.equal(r.skipped.length, 0, 'never filed as by-design retention');
+    assert.equal(r.diverged.length, 1);
+    assert.equal(r.diverged[0].name, '@deepseek-ai/cordis');
+    assert.equal(r.diverged[0].localVersion, '4.0.1');
+    assert.equal(r.diverged[0].globalVersion, '4.0.2');
+    assert.equal(r.diverged[0].relinkable, true);
+  });
+
+  test('a 0.x harness copy is relinkable inside its minor, not across it', () => {
+    // The harness ships its whole tree as one 0.1.x prerelease line, so the
+    // minor is what a caret would treat as the major.
+    pkg(globalNM, '@deepseek-ai/dsh-scope', '0.1.2-rc.1');
+    pkg(localNM, '@deepseek-ai/dsh-scope', '0.1.1-rc.2');
+    pkg(globalNM, '@deepseek-ai/dsh-llm', '0.2.0-rc.1');
+    pkg(localNM, '@deepseek-ai/dsh-llm', '0.1.1-rc.2');
+    const r = scanProfile({ profileRoot, globalRoot });
+    const byName = Object.fromEntries(r.diverged.map((d) => [d.name, d]));
+    assert.equal(r.diverged.length, 2);
+    assert.equal(byName['@deepseek-ai/dsh-scope'].relinkable, true);
+    assert.equal(byName['@deepseek-ai/dsh-llm'].relinkable, false);
+  });
+
+  test('a harness copy from another major is reported but not relinkable', () => {
+    pkg(globalNM, '@deepseek-ai/cordis', '4.0.2');
+    pkg(localNM, '@deepseek-ai/cordis', '3.9.0');
+    const r = scanProfile({ profileRoot, globalRoot });
+    assert.equal(r.diverged.length, 1);
+    assert.equal(r.diverged[0].relinkable, false);
+  });
+
+  test('an unparsable version is never silently relinked', () => {
+    pkg(globalNM, '@deepseek-ai/cordis', '4.0.2');
+    pkg(localNM, '@deepseek-ai/cordis', 'workspace');
+    const r = scanProfile({ profileRoot, globalRoot });
+    assert.equal(r.diverged.length, 1);
+    assert.equal(r.diverged[0].relinkable, false);
   });
 
   test('treats an existing symlink as already done', () => {
@@ -81,7 +128,23 @@ describe('scanProfile', () => {
     const bare = join(tmp, 'bare');
     mkdirSync(bare, { recursive: true });
     const r = scanProfile({ profileRoot: bare, globalRoot });
-    assert.deepEqual(r, { duplicates: [], skipped: [], linked: [] });
+    assert.deepEqual(r, { duplicates: [], diverged: [], skipped: [], linked: [] });
+  });
+});
+
+describe('sameReleaseLine', () => {
+  test('holds inside a line and breaks across one', () => {
+    assert.equal(sameReleaseLine('4.0.1', '4.0.2'), true);
+    assert.equal(sameReleaseLine('1.0.2', '1.0.3'), true);
+    assert.equal(sameReleaseLine('0.1.0-rc.7', '0.1.2-rc.1'), true);
+    assert.equal(sameReleaseLine('3.9.0', '4.0.2'), false);
+    assert.equal(sameReleaseLine('0.1.1-rc.2', '0.2.0-rc.1'), false);
+  });
+
+  test('an unreadable version is never treated as the same line', () => {
+    assert.equal(sameReleaseLine(null, '4.0.2'), false);
+    assert.equal(sameReleaseLine('4.0.1', null), false);
+    assert.equal(sameReleaseLine('link:../elsewhere', '4.0.2'), false);
   });
 });
 
@@ -139,6 +202,25 @@ describe('linkDuplicates / restore', () => {
     const after = scanProfile({ profileRoot, globalRoot });
     assert.equal(after.duplicates.length, 1, 'a real copy is back');
     assert.equal(after.linked.length, 0);
+  });
+
+  test('relinks a stale harness copy onto the global version, reversibly', () => {
+    const g = pkg(globalNM, '@deepseek-ai/cordis', '4.0.2');
+    pkg(localNM, '@deepseek-ai/cordis', '4.0.1');
+    const backupDir = join(tmp, 'backup');
+    const { diverged } = scanProfile({ profileRoot, globalRoot });
+
+    const res = linkDuplicates(diverged, { backupDir });
+    assert.equal(res.failed.length, 0);
+    assert.equal(realpathSync(join(localNM, '@deepseek-ai/cordis')), realpathSync(g));
+    assert.equal(scanProfile({ profileRoot, globalRoot }).linked.length, 1);
+
+    // The version move is undoable like any other fix: the 4.0.1 copy comes back.
+    restore({ backupDir, profileRoot });
+    const after = scanProfile({ profileRoot, globalRoot });
+    assert.equal(after.linked.length, 0);
+    assert.equal(after.diverged.length, 1);
+    assert.equal(after.diverged[0].localVersion, '4.0.1');
   });
 
   test('is idempotent: a second run finds nothing to do', () => {

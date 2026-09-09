@@ -1,6 +1,6 @@
 {
   "name": "dsh-selfrepair",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "description": "Diagnose and repair a DeepSeek Harness (dsh) installation — duplicated profile modules, unusable model configuration, broken settings — from the settings page, a slash command, or a standalone CLI that works even when dsh cannot start.",
   "type": "module",
   "license": "MIT",
@@ -38,6 +38,10 @@
       "types": "./lib/paths.d.ts",
       "default": "./lib/paths.js"
     },
+    "./knowngood": {
+      "types": "./lib/knowngood.d.ts",
+      "default": "./lib/knowngood.js"
+    },
     "./remote": {
       "types": "./lib/remote.d.ts",
       "default": "./lib/remote.js"
@@ -52,7 +56,8 @@
     "cordis.patch.yml"
   ],
   "bin": {
-    "dsh-selfrepair": "bin/selfrepair.js"
+    "dsh-selfrepair": "bin/selfrepair.js",
+    "dsh-doctor": "bin/selfrepair.js"
   },
   "scripts": {
     "test": "node --test test/*.test.js",
@@ -66,7 +71,7 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-typert-protocol": "0.1.0-rc.6"
+    "@deepseek-ai/dsh-typert-protocol": ">=0.1.0-rc.6 <0.2.0"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/cordis": {
@@ -77,7 +82,7 @@
     }
   },
   "devDependencies": {
-    "@deepseek-ai/dsh-typert-protocol": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-typert-protocol": "0.1.2-rc.1",
     "typescript": "^5.6.0"
   },
   "dsh": {

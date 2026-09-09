@@ -97,24 +97,45 @@ is one deliberate click that applies every fixable repair.
 ## CLI reference
 
 ```bash
-dsh-selfrepair                       # status, every profile
-dsh-selfrepair status --profile web  # one profile
-dsh-selfrepair fix --profile web     # apply the fixable repairs
+dsh doctor                           # diagnose AND repair, every profile - the one command to reach for
+dsh-selfrepair doctor                # the same thing without the dsh launcher
+dsh-doctor doctor                    # and under the shorter binary name
+dsh-selfrepair                       # status, every profile (the default action never writes)
+dsh doctor status                    # read-only through the subcommand too
+dsh doctor --profile web             # repair one profile
+dsh-selfrepair fix --profile web     # `fix` is what `doctor` is an alias for
 dsh-selfrepair --fix --profile web   # --fix supplies the action with no positional
 dsh-selfrepair fix --only llm-config # scope to one check id
-dsh-selfrepair restore --profile web # undo the most recent fix, from its backup
+dsh doctor restore --profile web     # undo the most recent fix, from its backup
+dsh doctor rollback --profile web    # put the last known-good configuration back
 dsh-selfrepair status --json         # machine-readable
 ```
 
+`doctor` repairs; `status` reports. The command reached for when dsh is broken
+has to leave it working, not print a diagnosis - so `doctor` diagnoses, applies
+every fixable repair, and prints what remains. Every repair backs up what it
+touches and `restore` reverses it. Relinked modules only take effect in a *new*
+process, so the repair report names the running dsh processes that still hold
+the pre-fix copies.
+
 Exit code is 1 when anything is unhealthy, so it drops straight into a health
-check - see [`examples/healthcheck.sh`](examples/healthcheck.sh).
+check - see [`examples/healthcheck.sh`](examples/healthcheck.sh). Use `status`
+there: it is the action that never writes.
+
+> **`dsh doctor`**: the global `dsh` CLI launcher routes `dsh doctor` to
+> `dsh-selfrepair`. The launcher resolves before any profile boots, so it works
+> even when the very profile it would repair cannot start. That routing lives
+> in the installed `dsh` launcher (`@deepseek-ai/dsh/lib/bin.js`), not in this
+> package, so it is restored by patching the launcher after a `dsh` upgrade -
+> `dsh-doctor` and `dsh-selfrepair` survive an upgrade untouched.
 
 Slash command, inside any dsh session of the profile:
 
 ```
-/doctor          # report (default) - never writes
-/doctor fix      # apply the fixable repairs
-/doctor restore  # reverse the most recent fix
+/doctor           # report (default) - never writes
+/doctor fix       # apply the fixable repairs
+/doctor restore   # reverse the most recent fix
+/doctor rollback  # put the last known-good configuration back
 ```
 
 ## Every fix is reversible
@@ -124,6 +145,41 @@ user's installed packages and their settings file. Every fix writes a backup
 first - relinked packages move to `.dsh-doctor-backup/<timestamp>/`,
 `settings.yaml` is copied to `settings.yaml.doctor-backup` - and `restore`
 reverses the most recent fix from the backup it left behind.
+
+## The last configuration that worked
+
+Three of the five checks are report-only because the tool cannot know what a
+damaged config was *meant* to say. It can know what it *used to be*: a repair
+run that ends healthy records `settings.yaml` and the profile's
+`cordis.patch.yml` as a known-good snapshot, and `dsh doctor rollback` puts the
+most recent one back.
+
+```bash
+dsh doctor            # configure it, run this once - the healthy state is recorded
+# ...something breaks the config...
+dsh doctor rollback   # put the recorded state back
+```
+
+That recovers what no targeted repair can: a `settings.yaml` that no longer
+parses, a default model naming a model that does not exist, a hand-edited
+`cordis.patch.yml`. Snapshots live in
+`.dsh-doctor-known-good/snapshots/<timestamp>/` (newest 5 kept), an unchanged
+configuration keeps its existing snapshot so the timestamp names when the state
+last *differed*, and a rollback backs up what it replaces under
+`.dsh-doctor-known-good/pre-rollback/<timestamp>/`.
+
+`restore` and `rollback` answer different questions: `restore` reverses *this
+tool's* last fix; `rollback` reverses whatever broke the configuration since it
+last worked, whoever did it.
+
+**`~/.dsh/.credentials.yaml` is never snapshotted.** This tool reads credential
+key *names* and never their values, and copying a plaintext key store around to
+enable a rollback would trade that discipline for a small convenience - so a
+provider with a missing API key stays report-only, and no rollback will fix it.
+
+Recording happens on the writing path only. `detect` may never write (the
+settings page runs it on every open), so the snapshot is taken at the end of a
+repair run that leaves the installation healthy.
 
 ## How the worst failure works
 
@@ -143,9 +199,25 @@ Every agent preset fails to mount with
 `prompt section "deployment:persona" is already registered`, and no session
 can start. The fix replaces each copy with a symlink to the global package -
 realpath collapses onto one instance. Copies are *moved* to a backup, never
-deleted, and packages whose local version differs from the global one are
-reported and left alone: relinking those would silently change the dependency
-a plugin was built against.
+deleted.
+
+### A `dsh` upgrade puts every profile in that state
+
+Upgrading the global `dsh` moves its whole `@deepseek-ai/*` tree to a new
+release while each profile keeps the copies its lockfile pins - so the split
+arrives without anyone touching the profile. A differing version does not make
+the copy harmless: the harness's own module graph is only usable as one
+instance per process, whatever the version numbers say. Those stale copies are
+therefore reported as a failure and relinked onto the global version, which is
+the same move a reinstall against the upgraded tree would make (the report
+names each version change, and `restore` reverses it).
+
+Ordinary libraries are the opposite case - two versions of `zod` coexist fine,
+and relinking would silently change the dependency a plugin was built against,
+so a non-`@deepseek-ai/*` package whose version differs is kept as a local copy
+by design. A harness copy from a *different release line* (`3.x` local vs `4.x`
+global) is reported but not relinked either: that one needs the profile
+reinstalled against the upgraded `dsh`.
 
 ### Why the peers are `optional`
 
@@ -190,7 +262,7 @@ one broken probe cannot hide the rest of the diagnosis.
 git clone https://github.com/dushaobindoudou/dsh-selfrepair.git
 cd dsh-selfrepair
 npm install
-npm test         # 84 tests, no network, no dsh install required
+npm test         # 149 tests, no network, no dsh install required
 npm run typecheck
 ```
 

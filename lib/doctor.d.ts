@@ -4,6 +4,7 @@
  * @module
  */
 import type { Check, CheckEnv, CheckResult, FixOutcome, UndoOutcome } from './types.js';
+import type { SnapshotRecord } from './knowngood.js';
 
 /** Restrict a repair or rollback to specific check ids. */
 export interface ScopeOptions {
@@ -34,6 +35,13 @@ export interface RepairOutcome {
   /** Whether the whole profile is healthy after the repairs. */
   healthyAfter: boolean;
   results: CheckResult[];
+  /**
+   * The known-good snapshot this run recorded, or null when the run did not
+   * end healthy (or there was nothing to record). A repair run that leaves the
+   * installation healthy is the only moment the tool may write a snapshot,
+   * since `detect` must stay read-only.
+   */
+  recorded: SnapshotRecord | null;
 }
 
 /** Outcome of {@link rollback}; re-diagnoses after restoring. */

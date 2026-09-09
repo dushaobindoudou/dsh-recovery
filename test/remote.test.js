@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -80,6 +80,46 @@ describe('doctor Remote (settings-page channel)', () => {
     assert.equal(r.healthyAfter, false);
   });
 
+  test('restore undoes the last fix through the settings-page channel', async () => {
+    // The page could fix but never undo, while "every fix is reversible" is
+    // the tool's premise.
+    writeFileSync(join(dshHome, 'settings.yaml'), 'llm-deepseek:\n  baseURL: "11111"\n');
+    assert.equal((await remote.fix(null)).healthyAfter, true);
+    const r = await remote.restore(null);
+    assert.deepEqual(r.undone.map((u) => u.id), ['llm-config']);
+    assert.equal(r.healthy, false, 'the original breakage is back');
+  });
+
+  test('a healthy fix records a known-good configuration the page can name', async () => {
+    writeFileSync(join(dshHome, 'settings.yaml'), 'llm-deepseek:\n  baseURL: "11111"\n');
+    assert.equal((await remote.status(null)).knownGood, null);
+    await remote.fix(null);
+    const r = await remote.status(null);
+    assert.ok(r.knownGood !== null, 'the page needs a timestamp to label the rollback button');
+    assert.match(r.knownGood.recordedAt, /^\d{4}-\d{2}-\d{2}T/);
+    assert.ok(r.knownGood.files.includes('settings.yaml'));
+  });
+
+  test('rollback puts the recorded configuration back', async () => {
+    const good = 'agent-presets:\n  default: cordis\n';
+    writeFileSync(join(dshHome, 'settings.yaml'), good);
+    await remote.fix(null); // healthy -> records the snapshot
+
+    writeFileSync(join(dshHome, 'settings.yaml'), 'agent-presets:\n  default: [unclosed\n');
+    assert.equal((await remote.status(null)).healthy, false);
+
+    const r = await remote.rollback(null);
+    assert.deepEqual(r.rolledBack.restored, ['settings.yaml']);
+    assert.equal(r.healthy, true);
+    assert.equal(readFileSync(join(dshHome, 'settings.yaml'), 'utf8'), good);
+  });
+
+  test('rollback with nothing recorded reports it instead of writing', async () => {
+    const r = await remote.rollback(null);
+    assert.equal(r.rolledBack.from, null);
+    assert.deepEqual(r.rolledBack.restored, []);
+  });
+
   test('info lists every check with its metadata', async () => {
     const r = await remote.info(null);
     assert.equal(r.error, null);
@@ -142,6 +182,40 @@ describe('doctor Remote (settings-page channel)', () => {
     assert.equal(r.ai.provider, 'vol');
     assert.equal(r.ai.analysis, '快照显示一切正常。');
     assert.equal(r.healthy, true);
+  });
+
+  test('the AI analysis is requested in the language the page is read in', async () => {
+    // The analysis lands in a settings-page card; asking for it in the wrong
+    // language makes the page bilingual for no reason.
+    const prompts = [];
+    const llm = {
+      listProviders() { return [{ provider: 'vol' }]; },
+      stream(options) {
+        prompts.push(options.messages[0].content[0].text);
+        return (async function* () {
+          yield { type: 'text-delta', index: 0, text: 'ok' };
+          yield { type: 'finish', reason: { kind: 'stop' } };
+        })();
+      },
+    };
+    const aiCtx = {
+      reflect: { provide() {} },
+      get(name) {
+        if (name === 'llm') return llm;
+        if (name === 'agentDefaultModel') {
+          return { currentSelection() { return { provider: 'vol', model: 'm' }; } };
+        }
+        return undefined;
+      },
+    };
+    const aiRemote = installDoctorRemote(aiCtx);
+    await aiRemote.status({ mode: 'ai', locale: 'en' });
+    await aiRemote.status({ mode: 'ai', locale: 'zh' });
+    await aiRemote.status({ mode: 'ai' });
+    assert.match(prompts[0], /Answer in English/);
+    assert.doesNotMatch(prompts[0], /用中文/);
+    assert.match(prompts[1], /用中文/);
+    assert.match(prompts[2], /用中文/, 'an unspecified locale stays Chinese, as before');
   });
 
   test('status ai mode reports a model-stream failure as an error, keeping rule results', async () => {

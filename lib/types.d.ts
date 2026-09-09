@@ -46,6 +46,13 @@ export interface CheckResult {
   findings?: CheckFinding[];
   /** Extra lines for the report body (paths, hints). */
   detail?: string[];
+  /**
+   * Overrides the check's own `fixable` flag for this run. A check that is
+   * fixable in general still has runs where every finding needs manual work
+   * (an incompatible package version, say); reporting `false` there keeps the
+   * report from offering a repair that would do nothing.
+   */
+  fixable?: boolean;
 }
 
 /** A failed sub-step of a `fix` or `undo`. */
