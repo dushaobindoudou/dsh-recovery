@@ -14,7 +14,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const BIN = fileURLToPath(new URL('../bin/selfrepair.js', import.meta.url));
+const BIN = fileURLToPath(new URL('../bin/recovery.js', import.meta.url));
 
 /** Build a package dir with a manifest. */
 function pkg(root, name, version) {
@@ -24,7 +24,7 @@ function pkg(root, name, version) {
   return dir;
 }
 
-describe('dsh-selfrepair CLI', () => {
+describe('dsh-recovery CLI', () => {
   let tmp, dshHome, globalRoot, profileNM;
 
   /** Run the binary against the fixture installation. */
@@ -102,7 +102,7 @@ describe('dsh-selfrepair CLI', () => {
   test('an unknown action is a usage error, not a repair', () => {
     const r = run('repair-everything');
     assert.equal(r.status, 2);
-    assert.match(r.stderr, /Usage: dsh-selfrepair \[doctor\|status\|fix\|restore\|rollback\]/);
+    assert.match(r.stderr, /Usage: dsh-recovery \[doctor\|status\|fix\|restore\|rollback\]/);
     assert.equal(lstatSync(join(profileNM, '@deepseek-ai/cordis')).isSymbolicLink(), false);
   });
 

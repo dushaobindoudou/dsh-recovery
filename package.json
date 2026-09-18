@@ -1,6 +1,6 @@
 {
-  "name": "dsh-selfrepair",
-  "version": "0.5.0",
+  "name": "dsh-recovery",
+  "version": "0.6.0",
   "description": "Diagnose and repair a DeepSeek Harness (dsh) installation — duplicated profile modules, unusable model configuration, broken settings — from the settings page, a slash command, or a standalone CLI that works even when dsh cannot start.",
   "type": "module",
   "license": "MIT",
@@ -56,8 +56,8 @@
     "cordis.patch.yml"
   ],
   "bin": {
-    "dsh-selfrepair": "bin/selfrepair.js",
-    "dsh-doctor": "bin/selfrepair.js"
+    "dsh-recovery": "bin/recovery.js",
+    "dsh-doctor": "bin/recovery.js"
   },
   "scripts": {
     "test": "node --test test/*.test.js",

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-09-18
+
+### Changed
+
+- **Package renamed: `dsh-selfrepair` → `dsh-recovery`.** npm does not support
+  in-place renames, so this is a fresh package: install `dsh-recovery`
+  (bins: `dsh-recovery`, `dsh-doctor`). The old `dsh-selfrepair` package stays
+  on npm marked deprecated and keeps shipping the `dsh-selfrepair` bin for
+  existing installs. GitHub repository renamed accordingly (old URLs redirect).
+- The client bundle id, plugin patch row name (`dsh-recovery`), usage texts and
+  docs follow the new name; the patch row id stays `plugin-selfrepair` so
+  existing known-good snapshots keep parsing.
 ## [0.5.0] - 2026-09-18
 
 dsh 0.1.5-rc.2 compatibility release.

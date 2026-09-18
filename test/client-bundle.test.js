@@ -51,7 +51,7 @@ describe('doctor client bundle', () => {
     const sb = sandbox();
     vm.runInNewContext(src, sb, { filename: 'lib/client.js' });
     assert.ok(sb.registered, 'bundle must call window.__ModuleLoader__.load');
-    assert.equal(sb.registered.id, 'dsh-selfrepair');
+    assert.equal(sb.registered.id, 'dsh-recovery');
     assert.equal(typeof sb.registered.factory, 'function');
   });
 

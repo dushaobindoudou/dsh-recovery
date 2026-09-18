@@ -1,7 +1,10 @@
-# dsh-selfrepair
+# dsh-recovery
 
-[![npm](https://img.shields.io/npm/v/dsh-selfrepair.svg)](https://www.npmjs.com/package/dsh-selfrepair)
-[![CI](https://github.com/dushaobindoudou/dsh-selfrepair/actions/workflows/ci.yml/badge.svg)](https://github.com/dushaobindoudou/dsh-selfrepair/actions/workflows/ci.yml)
+> **Renamed in 0.6.0:** this package was `dsh-selfrepair`; it is now **`dsh-recovery`**. The old name stays on npm (deprecated) and keeps shipping the `dsh-selfrepair` bin for existing installs; new installs should use `dsh-recovery` (bins: `dsh-recovery`, `dsh-doctor`).
+
+
+[![npm](https://img.shields.io/npm/v/dsh-recovery.svg)](https://www.npmjs.com/package/dsh-recovery)
+[![CI](https://github.com/dushaobindoudou/dsh-recovery/actions/workflows/ci.yml/badge.svg)](https://github.com/dushaobindoudou/dsh-recovery/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Diagnose and repair a [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`) installation.**
@@ -18,7 +21,7 @@ Three repair surfaces, one engine:
 |---|---|---|
 | **诊断 settings page** | `dsh web` -> 设置 -> 诊断 | no |
 | **`/doctor` slash command** | inside any dsh session | no |
-| **`dsh-selfrepair` CLI** | any shell | **yes** |
+| **`dsh-recovery` CLI** | any shell | **yes** |
 
 The CLI is the primary entry point on purpose: the worst failure this tool fixes stops dsh from reaching a prompt at all, so a slash command is unreachable exactly when it is most needed.
 
@@ -41,7 +44,7 @@ One command adds the plugin to a profile - it installs the package, keeps
 row that mounts this plugin):
 
 ```bash
-dsh plugin --profile web add dsh-selfrepair
+dsh plugin --profile web add dsh-recovery
 ```
 
 Restart `dsh web` once and **设置 -> 诊断** appears.
@@ -50,8 +53,8 @@ The standalone CLI needs no profile at all - install it globally for the
 rescue path:
 
 ```bash
-npm install -g dsh-selfrepair
-dsh-selfrepair status          # diagnoses every profile it finds
+npm install -g dsh-recovery
+dsh-recovery status          # diagnoses every profile it finds
 ```
 
 <details>
@@ -59,7 +62,7 @@ dsh-selfrepair status          # diagnoses every profile it finds
 
 ```bash
 cd ~/.dsh/profiles/<name>
-npm install dsh-selfrepair
+npm install dsh-recovery
 ```
 
 then add the row to `~/.dsh/profiles/<name>/cordis.patch.yml`:
@@ -67,7 +70,7 @@ then add the row to `~/.dsh/profiles/<name>/cordis.patch.yml`:
 ```yaml
 - insert:
     - id: plugin-selfrepair
-      name: 'dsh-selfrepair'
+      name: 'dsh-recovery'
 ```
 
 `insert` adds a row; a bare `- id:` entry *patches an existing* one and fails
@@ -97,16 +100,16 @@ is one deliberate click that applies every fixable repair.
 ## CLI reference
 
 ```bash
-dsh-selfrepair doctor                 # diagnose AND repair, every profile - the one command to reach for
+dsh-recovery doctor                 # diagnose AND repair, every profile - the one command to reach for
 dsh-doctor doctor                     # the same thing under the shorter binary name
-dsh-selfrepair                        # status, every profile (the default action never writes)
-dsh-selfrepair status                 # read-only through the subcommand too
-dsh-selfrepair fix --profile web      # repair one profile (`fix` is what `doctor` is an alias for)
-dsh-selfrepair --fix --profile web    # --fix supplies the action with no positional
-dsh-selfrepair fix --only llm-config  # scope to one check id
-dsh-selfrepair restore --profile web  # undo the most recent fix, from its backup
-dsh-selfrepair rollback --profile web # put the last known-good configuration back
-dsh-selfrepair status --json          # machine-readable
+dsh-recovery                        # status, every profile (the default action never writes)
+dsh-recovery status                 # read-only through the subcommand too
+dsh-recovery fix --profile web      # repair one profile (`fix` is what `doctor` is an alias for)
+dsh-recovery --fix --profile web    # --fix supplies the action with no positional
+dsh-recovery fix --only llm-config  # scope to one check id
+dsh-recovery restore --profile web  # undo the most recent fix, from its backup
+dsh-recovery rollback --profile web # put the last known-good configuration back
+dsh-recovery status --json          # machine-readable
 ```
 
 `doctor` repairs; `status` reports. The command reached for when dsh is broken
@@ -125,7 +128,7 @@ there: it is the action that never writes.
 > this README used to advertise was a local patch to the installed launcher
 > (`@deepseek-ai/dsh/lib/bin.js`), and a dsh upgrade wipes it — it has to be
 > re-applied by hand after every upgrade. The standalone global bins
-> `dsh-selfrepair` / `dsh-doctor` survive upgrades untouched; use those.
+> `dsh-recovery` / `dsh-doctor` survive upgrades untouched; use those.
 
 Slash command, inside any dsh session of the profile:
 
@@ -149,13 +152,13 @@ reverses the most recent fix from the backup it left behind.
 Three of the five checks are report-only because the tool cannot know what a
 damaged config was *meant* to say. It can know what it *used to be*: a repair
 run that ends healthy records `settings.yaml` and the profile's
-`cordis.patch.yml` as a known-good snapshot, and `dsh-selfrepair rollback` puts the
+`cordis.patch.yml` as a known-good snapshot, and `dsh-recovery rollback` puts the
 most recent one back.
 
 ```bash
-dsh-selfrepair doctor # configure it, run this once - the healthy state is recorded
+dsh-recovery doctor # configure it, run this once - the healthy state is recorded
 # ...something breaks the config...
-dsh-selfrepair rollback # put the recorded state back
+dsh-recovery rollback # put the recorded state back
 ```
 
 That recovers what no targeted repair can: a `settings.yaml` that no longer
@@ -257,8 +260,8 @@ one broken probe cannot hide the rest of the diagnosis.
 ## Development
 
 ```bash
-git clone https://github.com/dushaobindoudou/dsh-selfrepair.git
-cd dsh-selfrepair
+git clone https://github.com/dushaobindoudou/dsh-recovery.git
+cd dsh-recovery
 npm install
 npm test         # 149 tests, no network, no dsh install required
 npm run typecheck

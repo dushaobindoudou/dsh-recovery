@@ -21,7 +21,7 @@ describe('parsePsOutput', () => {
 
   test('does not match dsh-prefixed binaries or path segments', () => {
     const r = parsePsOutput(
-      '10 node /bin/dsh-selfrepair fix\n' +
+      '10 node /bin/dsh-recovery fix\n' +
         '11 node /Users/x/workspace/dsh-refine/smoke-host.mjs\n' +
         '12 /opt/dsh-doctor/bin/run\n',
     );

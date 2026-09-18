@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * `dsh-selfrepair` (aliases: `dsh-selfrepair doctor`, `dsh-doctor`, and the
+ * `dsh-recovery` (formerly `dsh-selfrepair`; aliases: `dsh-recovery doctor`, `dsh-doctor`, and the
  * `dsh doctor` subcommand) - the same diagnosis as `/doctor`, from a shell.
  *
  * This is the primary entry point, not a convenience: the duplicated-module
@@ -10,7 +10,7 @@
  * itself cannot start.
  *
  * Usage:
- *   dsh-selfrepair [doctor|status|fix|restore|rollback] [--fix] [--profile <name>] [--only <check-id>] [--json]
+ *   dsh-recovery [doctor|status|fix|restore|rollback] [--fix] [--profile <name>] [--only <check-id>] [--json]
  *
  * `doctor` is the one-command repair — the spelling `dsh doctor` routes to —
  * and is an alias for `fix`: diagnose, apply every fixable repair, and report
@@ -45,7 +45,7 @@ for (let i = 0; i < argv.length; i++) {
   positionalTokens.push(argv[i]);
 }
 const USAGE = [
-  'Usage: dsh-selfrepair [doctor|status|fix|restore|rollback] [--fix] [--profile <name>] [--only <check-id>] [--json]',
+  'Usage: dsh-recovery [doctor|status|fix|restore|rollback] [--fix] [--profile <name>] [--only <check-id>] [--json]',
   '',
   '  doctor   diagnose and repair (alias of fix) — the one command that restores a usable install',
   '  status   report only, never writes (the default with no action)',

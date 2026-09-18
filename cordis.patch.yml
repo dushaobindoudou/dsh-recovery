@@ -1,4 +1,4 @@
-# The dsh-selfrepair bundle patch.
+# The dsh-recovery bundle patch.
 #
 # This package is a dsh *plugin bundle*: the profile composer reads this file
 # through the `dsh.bundle.patch` manifest field in package.json and applies it
@@ -10,4 +10,4 @@
 
 - insert:
     - id: plugin-selfrepair
-      name: 'dsh-selfrepair'
+      name: 'dsh-recovery'

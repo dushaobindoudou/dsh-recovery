@@ -1,7 +1,10 @@
-# dsh-selfrepair
+# dsh-recovery
 
-[![npm](https://img.shields.io/npm/v/dsh-selfrepair.svg)](https://www.npmjs.com/package/dsh-selfrepair)
-[![CI](https://github.com/dushaobindoudou/dsh-selfrepair/actions/workflows/ci.yml/badge.svg)](https://github.com/dushaobindoudou/dsh-selfrepair/actions/workflows/ci.yml)
+> **0.6.0 更名**：本包原名 `dsh-selfrepair`，现更名 **`dsh-recovery`**。旧名保留在 npm（已 deprecate）并继续提供 `dsh-selfrepair` bin 供既有安装使用；新安装请用 `dsh-recovery`（bin：`dsh-recovery`、`dsh-doctor`）。
+
+
+[![npm](https://img.shields.io/npm/v/dsh-recovery.svg)](https://www.npmjs.com/package/dsh-recovery)
+[![CI](https://github.com/dushaobindoudou/dsh-recovery/actions/workflows/ci.yml/badge.svg)](https://github.com/dushaobindoudou/dsh-recovery/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **为 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（`dsh`）提供安装诊断与自修复。**
@@ -18,7 +21,7 @@
 |---|---|---|
 | **诊断设置页** | `dsh web` -> 设置 -> 诊断 | 否 |
 | **`/doctor` 斜杠命令** | 任意 dsh 会话内 | 否 |
-| **`dsh-selfrepair` CLI** | 任意终端 | **是** |
+| **`dsh-recovery` CLI** | 任意终端 | **是** |
 
 CLI 是主入口，这是刻意设计：本工具修复的最严重故障会让 dsh 连提示符都到不了，斜杠命令恰恰在最需要的时候够不着。
 
@@ -40,7 +43,7 @@ CLI 是主入口，这是刻意设计：本工具修复的最严重故障会让 
 bundle patch（挂载本插件的那一行）：
 
 ```bash
-dsh plugin --profile web add dsh-selfrepair
+dsh plugin --profile web add dsh-recovery
 ```
 
 重启一次 `dsh web`，**设置 -> 诊断** 就会出现。
@@ -48,8 +51,8 @@ dsh plugin --profile web add dsh-selfrepair
 独立 CLI 不需要任何 profile——全局装一次，留作救援通道：
 
 ```bash
-npm install -g dsh-selfrepair
-dsh-selfrepair status          # 诊断找到的所有 profile
+npm install -g dsh-recovery
+dsh-recovery status          # 诊断找到的所有 profile
 ```
 
 <details>
@@ -57,7 +60,7 @@ dsh-selfrepair status          # 诊断找到的所有 profile
 
 ```bash
 cd ~/.dsh/profiles/<name>
-npm install dsh-selfrepair
+npm install dsh-recovery
 ```
 
 再往 `~/.dsh/profiles/<name>/cordis.patch.yml` 加一行：
@@ -65,7 +68,7 @@ npm install dsh-selfrepair
 ```yaml
 - insert:
     - id: plugin-selfrepair
-      name: 'dsh-selfrepair'
+      name: 'dsh-recovery'
 ```
 
 `insert` 是新增；单独的 `- id:` 是*修改已有条目*，会报
@@ -91,16 +94,16 @@ npm install dsh-selfrepair
 ## CLI 参考
 
 ```bash
-dsh-selfrepair doctor                 # 诊断并修复所有 profile —— 出问题时就用这一条
+dsh-recovery doctor                 # 诊断并修复所有 profile —— 出问题时就用这一条
 dsh-doctor doctor                     # 同上，短一点的二进制名
-dsh-selfrepair                        # status，所有 profile（默认动作，绝不写入）
-dsh-selfrepair status                 # 子命令下的只读报告
-dsh-selfrepair fix --profile web      # 只修一个 profile（`doctor` 就是 `fix` 的别名）
-dsh-selfrepair --fix --profile web    # --fix 即动作，无需位置参数
-dsh-selfrepair fix --only llm-config  # 限定一个检查项
-dsh-selfrepair restore --profile web  # 从备份撤销最近一次修复
-dsh-selfrepair rollback --profile web # 回滚到上一个已知可用的配置
-dsh-selfrepair status --json          # 机器可读输出
+dsh-recovery                        # status，所有 profile（默认动作，绝不写入）
+dsh-recovery status                 # 子命令下的只读报告
+dsh-recovery fix --profile web      # 只修一个 profile（`doctor` 就是 `fix` 的别名）
+dsh-recovery --fix --profile web    # --fix 即动作，无需位置参数
+dsh-recovery fix --only llm-config  # 限定一个检查项
+dsh-recovery restore --profile web  # 从备份撤销最近一次修复
+dsh-recovery rollback --profile web # 回滚到上一个已知可用的配置
+dsh-recovery status --json          # 机器可读输出
 ```
 
 `doctor` 修复，`status` 只报告。dsh 坏掉时要用的那条命令必须把它修回可用，
@@ -115,7 +118,7 @@ dsh-selfrepair status --json          # 机器可读输出
 > **`dsh doctor` 在 dsh 0.1.5-rc.2 上不可用。** 0.1.5 的原版启动器只路由
 > `web` 与 `plugin` 两个子命令；本 README 过去宣传的 `doctor` 路由是对已安装
 > 启动器（`@deepseek-ai/dsh/lib/bin.js`）的本地补丁，升级 `dsh` 即被冲掉、每次
-> 升级后都要手工重打。全局安装的 `dsh-selfrepair` / `dsh-doctor` 两个二进制
+> 升级后都要手工重打。全局安装的 `dsh-recovery` / `dsh-doctor` 两个二进制
 > 不受升级影响——请直接使用它们。
 
 会话内斜杠命令（挂载本插件的 profile）：
@@ -138,13 +141,13 @@ dsh-selfrepair status --json          # 机器可读输出
 
 五项检查里有三项只报告，因为工具无法知道损坏的配置*原本想写什么*。但它可以
 知道这份配置*原来是什么*：一次以健康收尾的修复运行会把 `settings.yaml` 与该
-profile 的 `cordis.patch.yml` 记为 known-good 快照，`dsh-selfrepair rollback`
+profile 的 `cordis.patch.yml` 记为 known-good 快照，`dsh-recovery rollback`
 把最近一份放回去。
 
 ```bash
-dsh-selfrepair doctor # 配好后跑这一次，可用状态就被记下了
+dsh-recovery doctor # 配好后跑这一次，可用状态就被记下了
 # ……某次改动把配置弄坏了……
-dsh-selfrepair rollback # 把记录下来的状态放回去
+dsh-recovery rollback # 把记录下来的状态放回去
 ```
 
 它能救回定点修复救不了的情况：`settings.yaml` 语法坏掉、默认模型指向不存在的
@@ -230,8 +233,8 @@ export const myCheck = {
 ## 开发
 
 ```bash
-git clone https://github.com/dushaobindoudou/dsh-selfrepair.git
-cd dsh-selfrepair
+git clone https://github.com/dushaobindoudou/dsh-recovery.git
+cd dsh-recovery
 npm install
 npm test         # 149 个测试，无需网络、无需 dsh 安装
 npm run typecheck

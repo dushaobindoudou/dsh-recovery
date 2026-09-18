@@ -31,7 +31,7 @@ describe('known-good snapshots', () => {
     settings = join(dshHome, 'settings.yaml');
     patch = join(profileRoot, 'cordis.patch.yml');
     writeFileSync(settings, GOOD);
-    writeFileSync(patch, '- insert:\n    - id: plugin-selfrepair\n      name: dsh-selfrepair\n');
+    writeFileSync(patch, '- insert:\n    - id: plugin-selfrepair\n      name: dsh-recovery\n');
   });
   afterEach(() => rmSync(tmp, { recursive: true, force: true }));
 
