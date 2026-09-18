@@ -91,18 +91,16 @@ npm install dsh-selfrepair
 ## CLI 参考
 
 ```bash
-dsh doctor                           # 诊断并修复所有 profile —— 出问题时就用这一条
-dsh-selfrepair doctor                # 同上，不经过 dsh 启动器
-dsh-doctor doctor                    # 同上，短一点的二进制名
-dsh-selfrepair                       # status，所有 profile（默认动作，绝不写入）
-dsh doctor status                    # 子命令下的只读报告
-dsh doctor --profile web             # 只修一个 profile
-dsh-selfrepair fix --profile web     # `doctor` 就是 `fix` 的别名
-dsh-selfrepair --fix --profile web   # --fix 即动作，无需位置参数
-dsh-selfrepair fix --only llm-config # 限定一个检查项
-dsh doctor restore --profile web     # 从备份撤销最近一次修复
-dsh doctor rollback --profile web    # 回滚到上一个已知可用的配置
-dsh-selfrepair status --json         # 机器可读输出
+dsh-selfrepair doctor                 # 诊断并修复所有 profile —— 出问题时就用这一条
+dsh-doctor doctor                     # 同上，短一点的二进制名
+dsh-selfrepair                        # status，所有 profile（默认动作，绝不写入）
+dsh-selfrepair status                 # 子命令下的只读报告
+dsh-selfrepair fix --profile web      # 只修一个 profile（`doctor` 就是 `fix` 的别名）
+dsh-selfrepair --fix --profile web    # --fix 即动作，无需位置参数
+dsh-selfrepair fix --only llm-config  # 限定一个检查项
+dsh-selfrepair restore --profile web  # 从备份撤销最近一次修复
+dsh-selfrepair rollback --profile web # 回滚到上一个已知可用的配置
+dsh-selfrepair status --json          # 机器可读输出
 ```
 
 `doctor` 修复，`status` 只报告。dsh 坏掉时要用的那条命令必须把它修回可用，
@@ -114,11 +112,11 @@ dsh-selfrepair status --json         # 机器可读输出
 [`examples/healthcheck.sh`](examples/healthcheck.sh)；健康检查请用 `status`，
 它是那个绝不写入的动作。
 
-> **`dsh doctor`**：全局 `dsh` CLI 启动器会把 `dsh doctor` 转发给
-> `dsh-selfrepair`。该路由在启动任何 profile 之前就已解析，因此即便要修复的
-> profile 无法启动也能用。这段路由位于已安装的 `dsh` 启动器
->（`@deepseek-ai/dsh/lib/bin.js`），不在本包内，升级 `dsh` 后需重新打补丁；
-> `dsh-doctor` 与 `dsh-selfrepair` 两个二进制不受升级影响。
+> **`dsh doctor` 在 dsh 0.1.5-rc.2 上不可用。** 0.1.5 的原版启动器只路由
+> `web` 与 `plugin` 两个子命令；本 README 过去宣传的 `doctor` 路由是对已安装
+> 启动器（`@deepseek-ai/dsh/lib/bin.js`）的本地补丁，升级 `dsh` 即被冲掉、每次
+> 升级后都要手工重打。全局安装的 `dsh-selfrepair` / `dsh-doctor` 两个二进制
+> 不受升级影响——请直接使用它们。
 
 会话内斜杠命令（挂载本插件的 profile）：
 
@@ -140,13 +138,13 @@ dsh-selfrepair status --json         # 机器可读输出
 
 五项检查里有三项只报告，因为工具无法知道损坏的配置*原本想写什么*。但它可以
 知道这份配置*原来是什么*：一次以健康收尾的修复运行会把 `settings.yaml` 与该
-profile 的 `cordis.patch.yml` 记为 known-good 快照，`dsh doctor rollback`
+profile 的 `cordis.patch.yml` 记为 known-good 快照，`dsh-selfrepair rollback`
 把最近一份放回去。
 
 ```bash
-dsh doctor            # 配好后跑这一次，可用状态就被记下了
+dsh-selfrepair doctor # 配好后跑这一次，可用状态就被记下了
 # ……某次改动把配置弄坏了……
-dsh doctor rollback   # 把记录下来的状态放回去
+dsh-selfrepair rollback # 把记录下来的状态放回去
 ```
 
 它能救回定点修复救不了的情况：`settings.yaml` 语法坏掉、默认模型指向不存在的

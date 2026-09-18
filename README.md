@@ -97,18 +97,16 @@ is one deliberate click that applies every fixable repair.
 ## CLI reference
 
 ```bash
-dsh doctor                           # diagnose AND repair, every profile - the one command to reach for
-dsh-selfrepair doctor                # the same thing without the dsh launcher
-dsh-doctor doctor                    # and under the shorter binary name
-dsh-selfrepair                       # status, every profile (the default action never writes)
-dsh doctor status                    # read-only through the subcommand too
-dsh doctor --profile web             # repair one profile
-dsh-selfrepair fix --profile web     # `fix` is what `doctor` is an alias for
-dsh-selfrepair --fix --profile web   # --fix supplies the action with no positional
-dsh-selfrepair fix --only llm-config # scope to one check id
-dsh doctor restore --profile web     # undo the most recent fix, from its backup
-dsh doctor rollback --profile web    # put the last known-good configuration back
-dsh-selfrepair status --json         # machine-readable
+dsh-selfrepair doctor                 # diagnose AND repair, every profile - the one command to reach for
+dsh-doctor doctor                     # the same thing under the shorter binary name
+dsh-selfrepair                        # status, every profile (the default action never writes)
+dsh-selfrepair status                 # read-only through the subcommand too
+dsh-selfrepair fix --profile web      # repair one profile (`fix` is what `doctor` is an alias for)
+dsh-selfrepair --fix --profile web    # --fix supplies the action with no positional
+dsh-selfrepair fix --only llm-config  # scope to one check id
+dsh-selfrepair restore --profile web  # undo the most recent fix, from its backup
+dsh-selfrepair rollback --profile web # put the last known-good configuration back
+dsh-selfrepair status --json          # machine-readable
 ```
 
 `doctor` repairs; `status` reports. The command reached for when dsh is broken
@@ -122,12 +120,12 @@ Exit code is 1 when anything is unhealthy, so it drops straight into a health
 check - see [`examples/healthcheck.sh`](examples/healthcheck.sh). Use `status`
 there: it is the action that never writes.
 
-> **`dsh doctor`**: the global `dsh` CLI launcher routes `dsh doctor` to
-> `dsh-selfrepair`. The launcher resolves before any profile boots, so it works
-> even when the very profile it would repair cannot start. That routing lives
-> in the installed `dsh` launcher (`@deepseek-ai/dsh/lib/bin.js`), not in this
-> package, so it is restored by patching the launcher after a `dsh` upgrade -
-> `dsh-doctor` and `dsh-selfrepair` survive an upgrade untouched.
+> **`dsh doctor` does not work on dsh 0.1.5-rc.2.** The stock 0.1.5 launcher
+> only routes the `web` and `plugin` subcommands. The custom `doctor` route
+> this README used to advertise was a local patch to the installed launcher
+> (`@deepseek-ai/dsh/lib/bin.js`), and a dsh upgrade wipes it — it has to be
+> re-applied by hand after every upgrade. The standalone global bins
+> `dsh-selfrepair` / `dsh-doctor` survive upgrades untouched; use those.
 
 Slash command, inside any dsh session of the profile:
 
@@ -151,13 +149,13 @@ reverses the most recent fix from the backup it left behind.
 Three of the five checks are report-only because the tool cannot know what a
 damaged config was *meant* to say. It can know what it *used to be*: a repair
 run that ends healthy records `settings.yaml` and the profile's
-`cordis.patch.yml` as a known-good snapshot, and `dsh doctor rollback` puts the
+`cordis.patch.yml` as a known-good snapshot, and `dsh-selfrepair rollback` puts the
 most recent one back.
 
 ```bash
-dsh doctor            # configure it, run this once - the healthy state is recorded
+dsh-selfrepair doctor # configure it, run this once - the healthy state is recorded
 # ...something breaks the config...
-dsh doctor rollback   # put the recorded state back
+dsh-selfrepair rollback # put the recorded state back
 ```
 
 That recovers what no targeted repair can: a `settings.yaml` that no longer

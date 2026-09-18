@@ -13,3 +13,4 @@ export declare const llmConfig: Check;
 export declare const settingsYaml: Check;
 export declare const agentDefaultModel: Check;
 export declare const apiKey: Check;
+export declare const brokenLinks: Check;

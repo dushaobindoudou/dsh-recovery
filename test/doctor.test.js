@@ -33,10 +33,10 @@ describe('doctor end-to-end on a reproduced broken install', () => {
   });
   afterEach(() => rmSync(tmp, { recursive: true, force: true }));
 
-  test('diagnose finds both failures among five checks', async () => {
+  test('diagnose finds both failures among six checks', async () => {
     const report = await diagnose(checks, env);
     assert.equal(report.healthy, false);
-    assert.equal(report.results.length, 5);
+    assert.equal(report.results.length, 6);
     const broken = report.results.filter((r) => !r.ok);
     assert.deepEqual(broken.map((r) => r.id).sort(), ['duplicate-modules', 'llm-config']);
     assert.ok(broken.every((r) => r.fixable === true));
@@ -44,6 +44,7 @@ describe('doctor end-to-end on a reproduced broken install', () => {
     assert.ok(report.results.find((r) => r.id === 'settings-yaml').ok);
     assert.ok(report.results.find((r) => r.id === 'agent-default-model').ok);
     assert.ok(report.results.find((r) => r.id === 'api-key').ok);
+    assert.ok(report.results.find((r) => r.id === 'broken-links').ok);
   });
 
   test('diagnose does not modify anything', async () => {
@@ -87,7 +88,7 @@ describe('doctor end-to-end on a reproduced broken install', () => {
     assert.equal(boom.ok, false);
     assert.match(boom.summary, /probe failed/);
     // The real checks still ran.
-    assert.equal(report.results.length, 6);
+    assert.equal(report.results.length, 7);
   });
 
   test('renderReport marks failures and points at the fix', async () => {

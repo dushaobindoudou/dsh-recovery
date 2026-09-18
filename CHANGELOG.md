@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-09-18
+
+dsh 0.1.5-rc.2 compatibility release.
+
+### Added
+
+- **`broken-links` check (report-only)**: detects the failure class a
+  project/workspace move leaves behind — dangling `link:`/`file:` dependency
+  targets in the profile's package.json, dangling node_modules symlinks
+  (including stale `.dsh-module-fallback` chains), and cordis.patch.yml rows
+  whose package cannot be resolved. Before this check, `status` reported
+  "No problems found" (exit 0) on a profile that could not start at all.
+  Report-only by design: the repair needs to know where the project moved.
+- The check ships with client settings-page card titles (zh/en) and unit
+  tests; the remote `info`/`status` payloads include it.
+
+### Fixed
+
+- **AI detection provider lookup (P1)**: the capability probe matched
+  `p.provider` against `llm.listProviders()` entries, but `LlmProviderInfo`
+  is `{id, name}` on every dsh version — `providerKnown` was always false, so
+  AI mode was never available on any real dsh. The fixture mocks that hid the
+  bug now use the real shape.
+- **README (P1)**: the `dsh doctor` subcommand route does not exist on the
+  stock 0.1.5 launcher (only `web` and `plugin`); the docs now recommend the
+  standalone `dsh-selfrepair` / `dsh-doctor` bins and say what happened to
+  the launcher patch.
+
 ## [0.4.0] - 2026-09-09
 
 ### Added

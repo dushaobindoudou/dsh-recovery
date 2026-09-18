@@ -49,7 +49,7 @@ describe('doctor Remote (settings-page channel)', () => {
   test('status reports healthy for a clean install', async () => {
     const r = await remote.status(null);
     assert.equal(r.healthy, true);
-    assert.equal(r.results.length, 5);
+    assert.equal(r.results.length, 6);
     assert.equal(r.env.profileRoot, profileRoot);
   });
 
@@ -123,7 +123,7 @@ describe('doctor Remote (settings-page channel)', () => {
   test('info lists every check with its metadata', async () => {
     const r = await remote.info(null);
     assert.equal(r.error, null);
-    assert.equal(r.checks.length, 5);
+    assert.equal(r.checks.length, 6);
     assert.ok(r.checks.every((c) => typeof c.id === 'string' && typeof c.fixable === 'boolean'));
     assert.equal(r.env.profileRoot, profileRoot);
   });
@@ -156,7 +156,7 @@ describe('doctor Remote (settings-page channel)', () => {
 
   test('status ai mode runs the model and returns its analysis when available', async () => {
     const llm = {
-      listProviders() { return [{ provider: 'vol' }]; },
+      listProviders() { return [{ id: 'vol', name: 'Volcano' }]; },
       stream() {
         return (async function* () {
           yield { type: 'text-delta', index: 0, text: '快照显示' };
@@ -189,7 +189,7 @@ describe('doctor Remote (settings-page channel)', () => {
     // language makes the page bilingual for no reason.
     const prompts = [];
     const llm = {
-      listProviders() { return [{ provider: 'vol' }]; },
+      listProviders() { return [{ id: 'vol', name: 'Volcano' }]; },
       stream(options) {
         prompts.push(options.messages[0].content[0].text);
         return (async function* () {
@@ -220,7 +220,7 @@ describe('doctor Remote (settings-page channel)', () => {
 
   test('status ai mode reports a model-stream failure as an error, keeping rule results', async () => {
     const llm = {
-      listProviders() { return [{ provider: 'vol' }]; },
+      listProviders() { return [{ id: 'vol', name: 'Volcano' }]; },
       stream() {
         return (async function* () {
           yield { type: 'finish', reason: { kind: 'error', failure: { message: 'boom' } } };
