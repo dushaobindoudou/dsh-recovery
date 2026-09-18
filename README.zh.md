@@ -1,6 +1,6 @@
 # dsh-recovery
 
-> **0.6.0 更名**：本包原名 `dsh-selfrepair`，现更名 **`dsh-recovery`**。旧名保留在 npm（已 deprecate）并继续提供 `dsh-selfrepair` bin 供既有安装使用；新安装请用 `dsh-recovery`（bin：`dsh-recovery`、`dsh-doctor`）。
+> **0.6.0 起双名并轨**：`dsh-recovery` 与 `dsh-selfrepair` 是**同一代码库的双名发布**——`dsh-recovery` 为今后主名，`dsh-selfrepair` 面向既有安装长期同步维护，两包版本号永远一致（用 `node scripts/publish-both.mjs` 发布）。
 
 
 [![npm](https://img.shields.io/npm/v/dsh-recovery.svg)](https://www.npmjs.com/package/dsh-recovery)

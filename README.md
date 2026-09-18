@@ -1,6 +1,6 @@
 # dsh-recovery
 
-> **Renamed in 0.6.0:** this package was `dsh-selfrepair`; it is now **`dsh-recovery`**. The old name stays on npm (deprecated) and keeps shipping the `dsh-selfrepair` bin for existing installs; new installs should use `dsh-recovery` (bins: `dsh-recovery`, `dsh-doctor`).
+> **Dual-name release since 0.6.0:** `dsh-recovery` and `dsh-selfrepair` ship **the same code from one repository** — `dsh-recovery` is the primary name going forward, `dsh-selfrepair` remains the long-term maintained name for existing installs. Versions always match (publish with `node scripts/publish-both.mjs`).
 
 
 [![npm](https://img.shields.io/npm/v/dsh-recovery.svg)](https://www.npmjs.com/package/dsh-recovery)

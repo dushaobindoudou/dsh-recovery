@@ -9,13 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Package renamed: `dsh-selfrepair` → `dsh-recovery`.** npm does not support
-  in-place renames, so this is a fresh package: install `dsh-recovery`
-  (bins: `dsh-recovery`, `dsh-doctor`). The old `dsh-selfrepair` package stays
-  on npm marked deprecated and keeps shipping the `dsh-selfrepair` bin for
-  existing installs. GitHub repository renamed accordingly (old URLs redirect).
+- **Dual-name release: `dsh-recovery` (primary) + `dsh-selfrepair` (twin).**
+  npm does not support in-place renames, so 0.6.0 introduced `dsh-recovery`
+  (bins: `dsh-recovery`, `dsh-doctor`) while `dsh-selfrepair` continues to be
+  published in lockstep from the same codebase (`node scripts/publish-both.mjs`)
+  — no deprecation, existing installs keep working with identical updates.
+  GitHub repository renamed to `dsh-recovery` (old URLs redirect).
 - The client bundle id, plugin patch row name (`dsh-recovery`), usage texts and
-  docs follow the new name; the patch row id stays `plugin-selfrepair` so
+  docs follow the primary name; the patch row id stays `plugin-selfrepair` so
   existing known-good snapshots keep parsing.
 ## [0.5.0] - 2026-09-18
 
